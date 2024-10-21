@@ -3,6 +3,7 @@ package paramaterExtracter;
 import java.util.ArrayList;
 
 import breakDownPathExtracter.PutInstanceVariable;
+import pathExtracter.TraceMethodBlock;
 import tracer.ValueOption;
 
 public class Instance {
@@ -11,6 +12,7 @@ public class Instance {
 	private String ownerClass;
 	private ArrayList<ExtractMethod> extractMethodLists = new ArrayList<ExtractMethod>();
 	private ArrayList<PutInstanceVariable> putInstanceVariableLists = new ArrayList<PutInstanceVariable>();
+	private ArrayList<TraceMethodBlock> traceMethodBlockLists = new ArrayList<TraceMethodBlock>();
 	
 	public Instance(String s, String oC) {
 		id = s;
@@ -46,11 +48,19 @@ public class Instance {
 		return putInstanceVariableLists;
 	}
 	
+	public ArrayList<TraceMethodBlock> getTraceMethodBlockLists(){
+		return traceMethodBlockLists;
+	}
+	
 	public void addExtractMethodLists(ExtractMethod input) {
 		extractMethodLists.add(input);
 	}
 	
 	public void addPutInstanceVariableLists(PutInstanceVariable input) {
 		putInstanceVariableLists.add(input);
+	}
+	
+	public void addTraceMethodBlockLists(TraceMethodBlock input) {
+		traceMethodBlockLists.add(input);
 	}
 }

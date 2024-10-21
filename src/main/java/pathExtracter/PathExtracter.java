@@ -68,7 +68,7 @@ public class PathExtracter {
 		return result;
 	}
 	
-	private ArrayList<TraceMethodBlock> getTraceMethodBlockLists(ArrayList<Trace> traceLists){
+	public ArrayList<TraceMethodBlock> getTraceMethodBlockLists(ArrayList<Trace> traceLists){
 		ArrayList<TraceMethodBlock> traceMethodBlockLists = new ArrayList<TraceMethodBlock>();
 		TraceMethodBlock traceMethodBlock = null;
 		

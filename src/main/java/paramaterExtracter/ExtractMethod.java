@@ -8,13 +8,15 @@ import tracer.ValueOption;
 public class ExtractMethod {
 
 	private String methodName;
+	private int seqNum;
 	private ArrayList<ValueOption> argumentLists = new ArrayList<ValueOption>();
 	private ValueOption returnValueOption = null;
 	private AnalyzerMethod analyzerMethod;
 	
-	public ExtractMethod(String s, AnalyzerMethod aM) {
+	public ExtractMethod(String s, AnalyzerMethod aM, int sN) {
 		methodName = s;
 		analyzerMethod = aM;
+		seqNum = sN;
 	}
 	
 	public void addArgumentLists(ValueOption input) {
@@ -27,6 +29,10 @@ public class ExtractMethod {
 	
 	public String getMethodName() {
 		return methodName;
+	}
+	
+	public int getSeqNum() {
+		return seqNum;
 	}
 	
 	public ArrayList<ValueOption> getArgmentLists(){

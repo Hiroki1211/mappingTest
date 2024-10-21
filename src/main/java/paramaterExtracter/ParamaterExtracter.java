@@ -6,14 +6,14 @@ import java.util.regex.Pattern;
 
 import analyzer.*;
 import breakDownPathExtracter.PutInstanceVariable;
+import pathExtracter.PathExtracter;
+import pathExtracter.TraceMethodBlock;
 import tracer.Lexer;
 import tracer.Trace;
 import tracer.ValueOption;
 
 public class ParamaterExtracter {
 	private static String inputTraceFileName = "trace.json";
-	
-	private ArrayList<String> excludeOwner = this.getExcludeOwner();
 	
 	public static void main(String[] argv) {
 		File inputTraceFile = new File(inputTraceFileName);
@@ -75,24 +75,10 @@ public class ParamaterExtracter {
 		return result;
 	}
 	
-	public ArrayList<String> getExcludeOwner(){
-		ArrayList<String> excludeOwner = new ArrayList<String>();
-		excludeOwner.add("void");
-		excludeOwner.add("boolean");
-		excludeOwner.add("char");
-		excludeOwner.add("double");
-		excludeOwner.add("float");
-		excludeOwner.add("int");
-		excludeOwner.add("java.lang.String");
-		
-		return excludeOwner;
-	}
-	
-	public void run(ArrayList<AnalyzerMethod> analyzerMethodLists, ArrayList<AnalyzerVariable> analyzerVariableLists, ArrayList<Trace> traceLists) {
-		this.extractParamater(traceLists, analyzerMethodLists, analyzerVariableLists);
-//		ArrayList<UnitTest> unitTestLists = createUnitTestLists(analyzerMethodLists, analyzerVariableLists);
-//		ArrayList<UnitTestGroup> unitTestGroupLists = createUnitTestGroupLists(unitTestLists);
-//		createExternalFile(unitTestGroupLists);
+	public ArrayList<ExtractClass> run(ArrayList<AnalyzerMethod> analyzerMethodLists, ArrayList<AnalyzerVariable> analyzerVariableLists, ArrayList<Trace> traceLists) {
+		ArrayList<ExtractClass> extractClassLists = this.extractParamater(traceLists, analyzerMethodLists, analyzerVariableLists);
+
+		return extractClassLists;
 	}
 	
 	private ArrayList<ExtractClass> extractParamater(ArrayList<Trace> traceLists, ArrayList<AnalyzerMethod> analyzerMethodLists, ArrayList<AnalyzerVariable> analyzerVariableLists) {
@@ -148,7 +134,7 @@ public class ParamaterExtracter {
 						
 						if(analyzerMethod != null && analyzerMethod.getAccessModifier().equals("public")) {
 							// create method
-							ExtractMethod extractMethod = new ExtractMethod(callTrace.getAttr().getName(), analyzerMethod);
+							ExtractMethod extractMethod = new ExtractMethod(callTrace.getAttr().getName(), analyzerMethod, callTrace.getSeqNum());
 							for(int callParamNum = 0; callParamNum < callParamTraceLists.size(); callParamNum++ ) {
 								extractMethod.addArgumentLists(callParamTraceLists.get(callParamNum).getValueOption());
 							}
@@ -186,13 +172,13 @@ public class ParamaterExtracter {
 							String[] splitOwner = callTrace.getAttr().getOwner().split(Pattern.quote("."));
 							String methodOwnerName = splitOwner[splitOwner.length - 1];
 							
-							if(callTrace.getMname().equals(targetAnalyzerMethod.getName()) && targetAnalyzerMethod.getOwnerClass().equals(methodOwnerName)) {
+							if(callTrace.getMname().equals(targetAnalyzerMethod.getName()) && targetAnalyzerMethod.getOwnerClass().getName().equals(methodOwnerName)) {
 								analyzerMethod = targetAnalyzerMethod;
 							}
 						}
 						
 						if(analyzerMethod == null || (analyzerMethod != null && analyzerMethod.getAccessModifier().equals("public"))) {
-							ExtractMethod extractMethod = new ExtractMethod(callTrace.getAttr().getName(), analyzerMethod);
+							ExtractMethod extractMethod = new ExtractMethod(callTrace.getAttr().getName(), analyzerMethod, callTrace.getSeqNum());
 							for(int callParamNum = 0; callParamNum < callParamTraceLists.size(); callParamNum++ ) {
 								extractMethod.addArgumentLists(callParamTraceLists.get(callParamNum).getValueOption());
 							}
@@ -240,8 +226,61 @@ public class ParamaterExtracter {
 					}
 					
 					break;
+			}	
+		}
+		
+		PathExtracter pathExtracter = new PathExtracter();
+		ArrayList<TraceMethodBlock> traceMethodBlockLists = pathExtracter.getTraceMethodBlockLists(traceLists);
+		
+		for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+			for(int index = 0; index < instanceLists.size() - 1; index++) {
+				Instance frontInstance = instanceLists.get(index);
+				Instance backInstance = instanceLists.get(index + 1);
+				int frontSeqNum = frontInstance.getExtractMethodLists().get(0).getSeqNum();
+				int backSeqNum = backInstance.getExtractMethodLists().get(0).getSeqNum();
+				
+				if(frontSeqNum > backSeqNum) {
+					instanceLists.set(index, backInstance);
+					instanceLists.set(index + 1, frontInstance);
+				}
 			}
+		}
+		
+		ArrayList<Integer> borderLists = new ArrayList<Integer>();
+		for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+			borderLists.add(instanceLists.get(instanceNum).getExtractMethodLists().get(0).getSeqNum());
+		}
+		
+		for(int blockNum = 0; blockNum < traceMethodBlockLists.size(); blockNum++) {
+			TraceMethodBlock traceMethodBlock = traceMethodBlockLists.get(blockNum);
+			Trace entryTrace = traceMethodBlock.getTraceLists().get(0);
 			
+			if(entryTrace.getValueOption() != null) {
+				String instanceId = entryTrace.getValueOption().getId();
+				Instance entryInstance = this.getInstanceFromId(instanceId, instanceLists);
+				
+				if(entryInstance != null) {
+					entryInstance.addTraceMethodBlockLists(traceMethodBlock);
+				}
+			}else {
+				String split[] = entryTrace.getFilename().split("/");
+				String className = split[split.length - 1];
+
+				for(int borderNum = 0; borderNum < borderLists.size(); borderNum++) {
+					if(borderNum == borderLists.size() - 1) {
+						if(instanceLists.get(borderNum).getOwnerClass().equals(className)) {
+							instanceLists.get(borderNum).addTraceMethodBlockLists(traceMethodBlock);
+						}
+					}else {
+						if(entryTrace.getSeqNum() > borderLists.get(borderNum) && entryTrace.getSeqNum() < borderLists.get(borderNum + 1)) {
+							if(instanceLists.get(borderNum).getOwnerClass().equals(className)) {
+								instanceLists.get(borderNum).addTraceMethodBlockLists(traceMethodBlock);
+							}
+							break;
+						}
+					}
+				}
+			}
 		}
 		
 		ArrayList<String> codeLists = this.getAnalyzeFile();
@@ -260,11 +299,16 @@ public class ParamaterExtracter {
 				}
 			}
 			
-//			System.out.println(className);
-//			ArrayList<Instance> testInstanceLists = extractClass.getInstanceLists();
-//			for(int i = 0; i < testInstanceLists.size(); i++) {
-//				testInstanceLists.get(i).display();
-//			}
+			System.out.println(className);
+			ArrayList<Instance> testInstanceLists = extractClass.getInstanceLists();
+			for(int i = 0; i < testInstanceLists.size(); i++) {
+				testInstanceLists.get(i).display();
+				Instance x = testInstanceLists.get(i);
+				for(int j = 0; j < x.getTraceMethodBlockLists().size(); j++) {
+					System.out.println(x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getMname() + x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getSeqNum());
+				}
+				System.out.println();
+			}
 		}
 		
 		return extractClassLists;

@@ -10,6 +10,8 @@ import analyzer.Analyzer;
 import analyzer.AnalyzerVariable;
 import breakDownPathExtracter.BreakDownPathExtracter;
 import breakDownPathExtracter.PutInstanceVariable;
+import paramaterExtracter.ExtractClass;
+import paramaterExtracter.ParamaterExtracter;
 import pathExtracter.PathExtracter;
 import pathExtracter.TraceMethodBlock;
 import testAnalyzer.Test;
@@ -38,27 +40,34 @@ public class Executer {
 		PathExtracter pathExtracter = new PathExtracter();
 		ArrayList<TestClass> evoSuiteTestClassLists = pathExtracter.run(analyzer, inputEvoSuiteTestFileNameLists, inputEvoSuiteTestTraceFileNameLists);
 		
-		// 3. breakDown test
-		BreakDownPathExtracter breakDownPathExtracter = new BreakDownPathExtracter();
-		ArrayList<TestClass> breakDownTestClassLists = breakDownPathExtracter.run(analyzer, inputBreakDownTestFileNameLists, inputBreakDownTestTraceFileNameLists);
+		// 3. extract natural paramater
+		ParamaterExtracter paramaterExtracter = new ParamaterExtracter();
+		ArrayList<ExtractClass> extractClassLists = paramaterExtracter.run(null, null, null);
 		
-		// 4. analyze extract path 
+		// 4. analyze extract path
 		executer.analyzeExtractPath(evoSuiteTestClassLists);
-		executer.analyzeExtractPath(breakDownTestClassLists);
 		
-		// 5. summarize same extract method
-		executer.summarizeSameExecutePath(evoSuiteTestClassLists);
-		executer.summarizeSameExecutePath(breakDownTestClassLists);
-		
-		// 6. matching same extecute path test ( brekDownTest vs evoSuite )
-		ArrayList<Result> resultLists = executer.matchingSameExecutePathTest(evoSuiteTestClassLists, breakDownTestClassLists);
-		ArrayList<NaturalTest> naturalTestLists = executer.createNaturalTest(resultLists, analyzer);
-		
-		// 7. export result
-		executer.createExternalFile(naturalTestLists);
-		executer.createEx01ResultExternalFIle(breakDownTestClassLists);
-		executer.createEx02ResultExternalFile(resultLists);
-		executer.createEx03ResultExternalFile(resultLists);
+//		// 3. breakDown test
+//		BreakDownPathExtracter breakDownPathExtracter = new BreakDownPathExtracter();
+//		ArrayList<TestClass> breakDownTestClassLists = breakDownPathExtracter.run(analyzer, inputBreakDownTestFileNameLists, inputBreakDownTestTraceFileNameLists);
+//		
+//		// 4. analyze extract path 
+//		executer.analyzeExtractPath(evoSuiteTestClassLists);
+//		executer.analyzeExtractPath(breakDownTestClassLists);
+//		
+//		// 5. summarize same extract method
+//		executer.summarizeSameExecutePath(evoSuiteTestClassLists);
+//		executer.summarizeSameExecutePath(breakDownTestClassLists);
+//		
+//		// 6. matching same extecute path test ( brekDownTest vs evoSuite )
+//		ArrayList<Result> resultLists = executer.matchingSameExecutePathTest(evoSuiteTestClassLists, breakDownTestClassLists);
+//		ArrayList<NaturalTest> naturalTestLists = executer.createNaturalTest(resultLists, analyzer);
+//		
+//		// 7. export result
+//		executer.createExternalFile(naturalTestLists);
+//		executer.createEx01ResultExternalFIle(breakDownTestClassLists);
+//		executer.createEx02ResultExternalFile(resultLists);
+//		executer.createEx03ResultExternalFile(resultLists);
 	}
 	
 	private void createEx01ResultExternalFIle(ArrayList<TestClass> breakDownTestClassLists) {
