@@ -2,8 +2,8 @@ package testAnalyzer;
 
 import java.util.ArrayList;
 
-import breakDownPathExtracter.PutInstanceVariable;
 import executer.ExecutePath;
+import paramaterExtracter.PutInstanceVariable;
 import pathExtracter.TraceMethodBlock;
 
 public class Test {

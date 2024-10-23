@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import analyzer.AnalyzerMethod;
+import executer.ExecutePath;
+import pathExtracter.TraceMethodBlock;
 import tracer.ValueOption;
 
 public class TestMethod {
@@ -20,6 +22,25 @@ public class TestMethod {
 	private AnalyzerMethod analyzerMethod = null;
 	
 	private ValueOption returnValueOption = null;
+	
+	private TraceMethodBlock traceMethodBlock = null;
+	private ExecutePath executePath = null;
+	
+	public void setExecutePath(ExecutePath input) {
+		executePath = input;
+	}
+	
+	public ExecutePath getExecutePath() {
+		return executePath;
+	}
+	
+	public TraceMethodBlock getTraceMethodBlock() {
+		return traceMethodBlock;
+	}
+	
+	public void setTraceMethodBlock(TraceMethodBlock input) {
+		traceMethodBlock = input;
+	}
 	
 	public ValueOption getReturnValueOption() {
 		return returnValueOption;
@@ -47,7 +68,12 @@ public class TestMethod {
 	
 	public TestMethod(String input) {
 		statement = input;
-		String[] splitBracket = input.split("[()]");
+//		System.out.println(input);
+		String[] splitBracket = input.split("[()]", 2);
+		if(splitBracket.length > 1) {
+			splitBracket[1] = splitBracket[1].replace(");", "");
+//			System.out.println(splitBracket[1]);
+		}
 		String[] splitSpace = splitBracket[0].split(" +");		
 		
 //		for(int i = 0; i < splitSpace.length; i++) {
@@ -85,10 +111,8 @@ public class TestMethod {
 		}
 		
 		if(splitBracket.length > 1 && !splitBracket[1].equals("")){
-			String tmpArg = statement.replace(" ", "");
-			tmpArg = tmpArg.replace(");", "");
-			String[] tmpSplitArg = tmpArg.split("[()]", 2);
-			String[] splitArgument = tmpSplitArg[1].split(",");
+			splitBracket[1] = splitBracket[1].replace(" ", "");
+			String[] splitArgument = splitBracket[1].split(",");
 			
 			for(int argNum = 0; argNum < splitArgument.length; argNum++) {
 				String arg = splitArgument[argNum].replace(" ", "");

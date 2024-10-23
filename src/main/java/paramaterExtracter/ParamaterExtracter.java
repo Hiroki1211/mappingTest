@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import analyzer.*;
-import breakDownPathExtracter.PutInstanceVariable;
 import pathExtracter.PathExtracter;
 import pathExtracter.TraceMethodBlock;
 import tracer.Lexer;
@@ -221,7 +220,7 @@ public class ParamaterExtracter {
 							}
 						}
 						
-						PutInstanceVariable putInstanceVariable = new PutInstanceVariable(analyzerVariable, putInstanceFieldTrace.getValueOption(), trace.getValueOption());
+						PutInstanceVariable putInstanceVariable = new PutInstanceVariable(analyzerVariable, putInstanceFieldTrace.getValueOption(), trace.getValueOption(), putInstanceFieldTrace.getSeqNum());
 						putInstance.addPutInstanceVariableLists(putInstanceVariable);
 					}
 					
@@ -233,56 +232,19 @@ public class ParamaterExtracter {
 		ArrayList<TraceMethodBlock> traceMethodBlockLists = pathExtracter.getTraceMethodBlockLists(traceLists);
 		
 		for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
-			for(int index = 0; index < instanceLists.size() - 1; index++) {
-				Instance frontInstance = instanceLists.get(index);
-				Instance backInstance = instanceLists.get(index + 1);
-				int frontSeqNum = frontInstance.getExtractMethodLists().get(0).getSeqNum();
-				int backSeqNum = backInstance.getExtractMethodLists().get(0).getSeqNum();
+			for(int methodNum = 0; methodNum < instanceLists.get(instanceNum).getExtractMethodLists().size(); methodNum++) {
+				ExtractMethod extractMethod = instanceLists.get(instanceNum).getExtractMethodLists().get(methodNum);
+				int argSize = extractMethod.getArgmentLists().size();
+				int blockNum = extractMethod.getSeqNum() + argSize + 1;
 				
-				if(frontSeqNum > backSeqNum) {
-					instanceLists.set(index, backInstance);
-					instanceLists.set(index + 1, frontInstance);
-				}
-			}
-		}
-		
-		ArrayList<Integer> borderLists = new ArrayList<Integer>();
-		for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
-			borderLists.add(instanceLists.get(instanceNum).getExtractMethodLists().get(0).getSeqNum());
-		}
-		
-		for(int blockNum = 0; blockNum < traceMethodBlockLists.size(); blockNum++) {
-			TraceMethodBlock traceMethodBlock = traceMethodBlockLists.get(blockNum);
-			Trace entryTrace = traceMethodBlock.getTraceLists().get(0);
-			
-			if(entryTrace.getValueOption() != null) {
-				String instanceId = entryTrace.getValueOption().getId();
-				Instance entryInstance = this.getInstanceFromId(instanceId, instanceLists);
-				
-				if(entryInstance != null) {
-					entryInstance.addTraceMethodBlockLists(traceMethodBlock);
-				}
-			}else {
-				String split[] = entryTrace.getFilename().split("/");
-				String className = split[split.length - 1];
-
-				for(int borderNum = 0; borderNum < borderLists.size(); borderNum++) {
-					if(borderNum == borderLists.size() - 1) {
-						if(instanceLists.get(borderNum).getOwnerClass().equals(className)) {
-							instanceLists.get(borderNum).addTraceMethodBlockLists(traceMethodBlock);
-						}
-					}else {
-						if(entryTrace.getSeqNum() > borderLists.get(borderNum) && entryTrace.getSeqNum() < borderLists.get(borderNum + 1)) {
-							if(instanceLists.get(borderNum).getOwnerClass().equals(className)) {
-								instanceLists.get(borderNum).addTraceMethodBlockLists(traceMethodBlock);
-							}
-							break;
-						}
+				for(int methodBlockNum = 0; methodBlockNum < traceMethodBlockLists.size(); methodBlockNum++) {
+					if(traceMethodBlockLists.get(methodBlockNum).getTraceLists().get(0).getSeqNum() == blockNum) {
+						extractMethod.setTraceMethodBlock(traceMethodBlockLists.get(methodBlockNum));
 					}
 				}
 			}
 		}
-		
+
 		ArrayList<String> codeLists = this.getAnalyzeFile();
 		for(int codeNum = 0; codeNum < codeLists.size(); codeNum++) {
 			String pathName = codeLists.get(codeNum);
@@ -299,16 +261,65 @@ public class ParamaterExtracter {
 				}
 			}
 			
-			System.out.println(className);
-			ArrayList<Instance> testInstanceLists = extractClass.getInstanceLists();
-			for(int i = 0; i < testInstanceLists.size(); i++) {
-				testInstanceLists.get(i).display();
-				Instance x = testInstanceLists.get(i);
-				for(int j = 0; j < x.getTraceMethodBlockLists().size(); j++) {
-					System.out.println(x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getMname() + x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getSeqNum());
+			/////////////////////////////
+			
+			ArrayList<String> classLists = new ArrayList<String>();
+			for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+				if(classLists.size() == 0) {
+					classLists.add(instanceLists.get(instanceNum).getOwnerClass());
+				}else {
+					if(!classLists.contains(instanceLists.get(instanceNum).getOwnerClass())) {
+						classLists.add(instanceLists.get(instanceNum).getOwnerClass());
+					}
 				}
-				System.out.println();
 			}
+			
+			for(int instanceNum = 0; instanceNum < extractClass.getInstanceLists().size(); instanceNum++) {
+				for(int index = 0; index < extractClass.getInstanceLists().size() - 1; index++) {
+					Instance frontInstance = extractClass.getInstanceLists().get(index);
+					Instance backInstance = extractClass.getInstanceLists().get(index + 1);
+					int frontSeqNum = frontInstance.getExtractMethodLists().get(0).getSeqNum();
+					int backSeqNum = backInstance.getExtractMethodLists().get(0).getSeqNum();
+					
+					if(frontSeqNum > backSeqNum) {
+						extractClass.getInstanceLists().set(index, backInstance);
+						extractClass.getInstanceLists().set(index + 1, frontInstance);
+					}
+				}
+			}
+			
+			for(int instanceNum = 0; instanceNum < extractClass.getInstanceLists().size(); instanceNum++) {
+				Instance targetInstance = extractClass.getInstanceLists().get(instanceNum);
+				ArrayList<ExtractMethod> methodLists = targetInstance.getExtractMethodLists();
+				
+				for(int methodNum = 0; methodNum < methodLists.size(); methodNum++) {
+					ExtractMethod extractMethod = methodLists.get(methodNum);
+					targetInstance.addTraceMethodBlockLists(extractMethod.getTraceMethodBlock());
+					int topSeqNum = extractMethod.getTraceMethodBlock().getTraceLists().get(0).getSeqNum();
+					int backSeqNum = extractMethod.getTraceMethodBlock().getTraceLists().get(extractMethod.getTraceMethodBlock().getTraceLists().size() - 1).getSeqNum();
+					
+					for(int blockNum = 0; blockNum < traceMethodBlockLists.size(); blockNum++) {
+						TraceMethodBlock targetTraceMethodBlock = traceMethodBlockLists.get(blockNum);
+						int targetSeqNum = targetTraceMethodBlock.getTraceLists().get(0).getSeqNum();
+						if(topSeqNum < targetSeqNum && targetSeqNum < backSeqNum) {
+							targetInstance.addTraceMethodBlockLists(targetTraceMethodBlock);
+						}
+					}
+				}
+			}
+			
+			/////////////////////////////
+			
+//			System.out.println(className);
+//			ArrayList<Instance> testInstanceLists = extractClass.getInstanceLists();
+//			for(int i = 0; i < testInstanceLists.size(); i++) {
+//				testInstanceLists.get(i).display();
+//				Instance x = testInstanceLists.get(i);
+//				for(int j = 0; j < x.getTraceMethodBlockLists().size(); j++) {
+//					System.out.println(x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getCname() + ":" + x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getMname() + ":" + x.getTraceMethodBlockLists().get(j).getTraceLists().get(0).getSeqNum());
+//				}
+//				System.out.println();
+//			}
 		}
 		
 		return extractClassLists;

@@ -88,6 +88,27 @@ public class PathExtracter {
 //			System.out.println(trace.getCname() + ":" + trace.getMname() + ":" + trace.getSeqNum() + ":" + trace.getLine());
 //		}
 		
+		for(int i = 0; i < traceMethodBlockLists.size(); i++) {
+			for(int j = 0; j < traceMethodBlockLists.size() - 1; j++) {
+				TraceMethodBlock frontTraceMethodBlock = traceMethodBlockLists.get(j);
+				TraceMethodBlock backTraceMethodBlock = traceMethodBlockLists.get(j + 1);
+				
+				int frontSeqNum = frontTraceMethodBlock.getTraceLists().get(0).getSeqNum();
+				int backSeqNum = backTraceMethodBlock.getTraceLists().get(0).getSeqNum();
+				
+				if(frontSeqNum > backSeqNum) {
+					traceMethodBlockLists.set(j, backTraceMethodBlock);
+					traceMethodBlockLists.set(j+1, frontTraceMethodBlock);
+				}
+				
+			}
+		}
+		
+//		for(int i = 0; i < traceMethodBlockLists.size(); i++) {
+//			System.out.print(traceMethodBlockLists.get(i).getTraceLists().get(0).getSeqNum() +  ", ");
+//		}
+//		System.out.println();
+		
 		return traceMethodBlockLists;
 	}
 	

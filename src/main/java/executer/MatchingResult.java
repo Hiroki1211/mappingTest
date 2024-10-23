@@ -2,19 +2,19 @@ package executer;
 
 public class MatchingResult {
 
-	private SameExecutePath evoSuiteSamePathExecutePath;
-	private SameExecutePath breakDownSamePathExecutePath;
+	private SameExecutePath sameExecuteEvoSuitePath;
+	private SameExecuteExtractPath sameExecuteExtractPath;
 	
-	public MatchingResult(SameExecutePath e, SameExecutePath b) {
-		evoSuiteSamePathExecutePath = e;
-		breakDownSamePathExecutePath = b;
+	public MatchingResult(SameExecutePath sEESP, SameExecuteExtractPath sEEP) {
+		sameExecuteEvoSuitePath = sEESP;
+		sameExecuteExtractPath = sEEP;
 	}
 	
-	public SameExecutePath getEvoSuiteSamePathExecutePath() {
-		return evoSuiteSamePathExecutePath;
+	public SameExecutePath getSameExecuteEvoSuitePath() {
+		return sameExecuteEvoSuitePath;
 	}
 	
-	public SameExecutePath getBreakDownSamePathExecutePath() {
-		return breakDownSamePathExecutePath;
+	public SameExecuteExtractPath getSameExecuteExtractPath() {
+		return sameExecuteExtractPath;
 	}
 }

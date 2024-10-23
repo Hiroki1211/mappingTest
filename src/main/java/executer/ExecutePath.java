@@ -14,6 +14,10 @@ public class ExecutePath {
 		fileName = f;
 	}
 	
+	public void display() {
+		System.out.println(mname + lineLists);
+	}
+	
 	public ArrayList<Integer> getLineLists(){
 		return lineLists;
 	}

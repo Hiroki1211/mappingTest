@@ -11,6 +11,7 @@ public class Lexer {
 	private ArrayList<Trace> traceLists = new ArrayList<Trace>();
 	private static String inputFileName = "src/main/resources/trace.json";
 	private String junitFileName = "junit-4.13.2.jar";
+	private String evoSuiteFileName = "evosuite-1.0.6.jar";
 	
 	public static void main(String[] argv) {
 		File inputFile = new File(inputFileName);
@@ -88,7 +89,7 @@ public class Lexer {
 					fileName = trimConma(fileName);
 					sp = fileName.split("[:/]");
 					
-					if(! sp[sp.length - 1].equals(junitFileName)) {
+					if(!sp[sp.length - 1].equals(junitFileName) && !sp[sp.length - 1].equals(evoSuiteFileName)) {
 						
 						Trace trace = new Trace();
 						Attr attr = new Attr();

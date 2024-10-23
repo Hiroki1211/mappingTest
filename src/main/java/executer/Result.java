@@ -2,116 +2,178 @@ package executer;
 
 import java.util.ArrayList;
 
+import paramaterExtracter.ExtractMethod;
+import paramaterExtracter.Instance;
 import testAnalyzer.Test;
 import testAnalyzer.TestClass;
+import tracer.ValueOption;
 
 public class Result {
 
 	private TestClass evoSuiteTestClass;
-	private TestClass breakDownTestClass;
-	
 	private ArrayList<MatchingResult> matchingResultLists = new ArrayList<MatchingResult>();
+	private ArrayList<PartiallyMatchingResult> partiallyMatchingResultLists = new ArrayList<PartiallyMatchingResult>();
 	private ArrayList<SameExecutePath> notMatchingEvoSuiteLists = new ArrayList<SameExecutePath>();
-	private ArrayList<SameExecutePath> notMatchingBreakDownLists = new ArrayList<SameExecutePath>();
+	private ArrayList<SameExecuteExtractPath> notMatchingExtractLists = new ArrayList<SameExecuteExtractPath>();
 	
-	public Result(TestClass e, TestClass b) {
-		evoSuiteTestClass = e;
-		breakDownTestClass = b;
+	public Result(TestClass eSTC) {
+		evoSuiteTestClass = eSTC;
 	}
 	
 	public void display() {
-		System.out.println("--------------- RESULT ------------------");
-		System.out.println("EvoSuiteTestClass:" +  evoSuiteTestClass.getClassName());
-		System.out.print("BreakDownTestClass:");
-		if(breakDownTestClass == null) {
-			System.out.println("null");
-		}else {
-			System.out.println(breakDownTestClass.getClassName());
+		System.out.println(evoSuiteTestClass.getClassName());
+		
+		// matching
+		for(int matchingNum = 0; matchingNum < matchingResultLists.size(); matchingNum++) {
+			MatchingResult matchingResult = matchingResultLists.get(matchingNum);
+			System.out.println("====matching result====");
+			
+			SameExecutePath sameExecutePath = matchingResult.getSameExecuteEvoSuitePath();
+			ArrayList<Test> testLists  = sameExecutePath.getTestLists();
+			System.out.println("EvoSuite:");
+			for(int testNum = 0; testNum < testLists.size(); testNum++) {
+				System.out.print(testLists.get(testNum).getMethodName() + ", ");
+			}
+			System.out.println();
+			
+			SameExecuteExtractPath sameExecuteExtractPath = matchingResult.getSameExecuteExtractPath();
+			ArrayList<Instance> instanceLists = sameExecuteExtractPath.getInstanecLists();
+			System.out.println("Extract:");
+			for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+				Instance instance = instanceLists.get(instanceNum);
+				ArrayList<ExtractMethod> extractMethodLists = instance.getExtractMethodLists();
+				for(int methodNum = 0; methodNum < extractMethodLists.size(); methodNum++) {
+					ExtractMethod extractMethod = extractMethodLists.get(methodNum);
+					System.out.print(extractMethod.getMethodName() + "(");
+					ArrayList<ValueOption> argumentLists = extractMethod.getArgmentLists();
+					for(int argNum = 0; argNum < argumentLists.size(); argNum++) {
+						if(argNum == argumentLists.size() - 1) {
+							System.out.print(argumentLists.get(argNum).getValue() + ")");
+						}else {
+							System.out.print(argumentLists.get(argNum).getValue() + ", ");
+						}
+					}
+					System.out.print(", ");
+				}
+				System.out.println();
+			}
 		}
 		System.out.println();
 		
-		// is matched 
-		for(int matchNum = 0; matchNum < matchingResultLists.size(); matchNum++) {
-			MatchingResult matchingResult = matchingResultLists.get(matchNum);
-			SameExecutePath evoSuiteSameExecutePath = matchingResult.getEvoSuiteSamePathExecutePath();
-			SameExecutePath breakDownSameExecutePath = matchingResult.getBreakDownSamePathExecutePath();
-			System.out.println("######## matched #########");
-			
-			ArrayList<Test> evoSuiteTestLists = evoSuiteSameExecutePath.getTestLists();
-			ArrayList<Test> breakDownTestLists = breakDownSameExecutePath.getTestLists();
-			
-			System.out.print("EvoSuite:");
-			for(int evoTestNum = 0; evoTestNum < evoSuiteTestLists.size(); evoTestNum++) {
-				Test evoSuiteTest = evoSuiteTestLists.get(evoTestNum);
-				System.out.print(evoSuiteTest.getMethodName() + ", ");
+		// partially Matching 
+		for(int parNum = 0; parNum < partiallyMatchingResultLists.size(); parNum++) {
+			PartiallyMatchingResult partiallyMatchingResult = partiallyMatchingResultLists.get(parNum);
+			System.out.println("----partially matching result----");
+			SameExecutePath sameExecutePath = partiallyMatchingResult.getSameExecuteEvoSuitePath();
+			ArrayList<Test> testLists = sameExecutePath.getTestLists();
+			System.out.println("EvoSuite:");
+			for(int testNum = 0; testNum < testLists.size(); testNum++) {
+				Test test = testLists.get(testNum);
+				System.out.print(test.getMethodName() + ", ");
 			}
 			System.out.println();
 			
-			System.out.print("BreakDown:");
-			for(int breakNum = 0; breakNum < breakDownTestLists.size(); breakNum++) {
-				Test breakDownTest = breakDownTestLists.get(breakNum);
-				System.out.print(breakDownTest.getMethodName() + ", ");
+			ArrayList<SameExecuteExtractPath> sameExecuteExtractPathLists = partiallyMatchingResult.getPartiallyMatchingExtractPathLists();
+			System.out.println("Extract:");
+			for(int pathNum = 0; pathNum <  sameExecuteExtractPathLists.size(); pathNum++) {
+				SameExecuteExtractPath sameExecuteExtractPath = sameExecuteExtractPathLists.get(pathNum);
+				ArrayList<Instance> instanceLists = sameExecuteExtractPath.getInstanecLists();
+				for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+					Instance instance = instanceLists.get(instanceNum);
+					ArrayList<ExtractMethod> extractMethodLists = instance.getExtractMethodLists();
+					for(int methodNum = 0; methodNum < extractMethodLists.size(); methodNum++) {
+						ExtractMethod extractMethod = extractMethodLists.get(methodNum);
+						System.out.print(extractMethod.getMethodName() + "(");
+						ArrayList<ValueOption> argumentLists = extractMethod.getArgmentLists();
+						for(int argNum = 0; argNum < argumentLists.size(); argNum++) {
+							if(argNum == argumentLists.size() - 1) {
+								System.out.print(argumentLists.get(argNum).getValue() + ")");
+							}else {
+								System.out.print(argumentLists.get(argNum).getValue() + ", ");
+							}
+						}
+						System.out.print(", ");
+					}
+					System.out.println();
+				}
 			}
-			System.out.println();
 		}
+		System.out.println();
 		
-		// is not matched EvoSuite
+		// not matching evoSuite
 		for(int notEvoNum = 0; notEvoNum < notMatchingEvoSuiteLists.size(); notEvoNum++) {
-			SameExecutePath notMatchEvoSuite = notMatchingEvoSuiteLists.get(notEvoNum);
-			System.out.println("********** not match EvoSuite **********");
-			
-			ArrayList<Test> evoSuiteTestLists = notMatchEvoSuite.getTestLists();
-			for(int evoNum = 0; evoNum < evoSuiteTestLists.size(); evoNum++) {
-				System.out.print(evoSuiteTestLists.get(evoNum).getMethodName() + ", ");
-			}
-			System.out.println();
-			
-		}
-		
-		// is not matched BreakDown
-		for(int notBreakNum = 0; notBreakNum < notMatchingBreakDownLists.size(); notBreakNum++) {
-			SameExecutePath notMatchBreak = notMatchingBreakDownLists.get(notBreakNum);
-			System.out.println("======== not match breakDown =======");
-			
-			ArrayList<Test> breakDownTestLists = notMatchBreak.getTestLists();
-			for(int breakNum = 0; breakNum < breakDownTestLists.size(); breakNum++) {
-				System.out.print(breakDownTestLists.get(breakNum).getMethodName() + ", ");
+			SameExecutePath sameExecutePath = notMatchingEvoSuiteLists.get(notEvoNum);
+			System.out.println("****not matching EvoSuite****");
+			ArrayList<Test> testLists = sameExecutePath.getTestLists();
+			System.out.println("EvoSuite:");
+			for(int testNum = 0; testNum < testLists.size(); testNum++) {
+				Test test = testLists.get(testNum);
+				System.out.print(test.getMethodName() + ", ");
 			}
 			System.out.println();
 		}
-		
 		System.out.println();
+		
+		// not matching extract
+		for(int notExtractNum = 0; notExtractNum < notMatchingExtractLists.size(); notExtractNum++) {
+			SameExecuteExtractPath sameExecuteExtractPath = notMatchingExtractLists.get(notExtractNum);
+			System.out.println("++++not matching Extract++++");
+			ArrayList<Instance> instanceLists = sameExecuteExtractPath.getInstanecLists();
+			for(int instanceNum = 0; instanceNum < instanceLists.size(); instanceNum++) {
+				Instance instance = instanceLists.get(instanceNum);
+				ArrayList<ExtractMethod> extractMethodLists = instance.getExtractMethodLists();
+				for(int methodNum = 0; methodNum < extractMethodLists.size(); methodNum++) {
+					ExtractMethod extractMethod = extractMethodLists.get(methodNum);
+					System.out.print(extractMethod.getMethodName() + "(");
+					ArrayList<ValueOption> argumentLists = extractMethod.getArgmentLists();
+					for(int argNum = 0; argNum < argumentLists.size(); argNum++) {
+						if(argNum == argumentLists.size() - 1) {
+							System.out.print(argumentLists.get(argNum).getValue() + ")");
+						}else {
+							System.out.print(argumentLists.get(argNum).getValue() + ", ");
+						}
+					}
+					System.out.print(", ");
+				}
+				System.out.println();
+			}
+			
+		}
 	}
 	
 	public void addMatchingResultLists(MatchingResult input) {
 		matchingResultLists.add(input);
 	}
 	
+	public void addPartiallyMatchingResultLists(PartiallyMatchingResult input) {
+		partiallyMatchingResultLists.add(input);
+	}
+	
 	public void addNotMatchingEvoSuiteLists(SameExecutePath input) {
 		notMatchingEvoSuiteLists.add(input);
 	}
 	
-	public void addNotMatchingBreakDownLists(SameExecutePath input) {
-		notMatchingBreakDownLists.add(input);
+	public void addNotMatchingExtractLists(SameExecuteExtractPath input) {
+		notMatchingExtractLists.add(input);
 	}
 	
 	public TestClass getEvoSuiteTestClass() {
 		return evoSuiteTestClass;
 	}
 	
-	public TestClass getBreakDownTestClass() {
-		return breakDownTestClass;
-	}
-	
 	public ArrayList<MatchingResult> getMatchingResultLists(){
 		return matchingResultLists;
 	}
 	
-	public ArrayList<SameExecutePath> getNotMatchingEvoSuiteLists(){
+	public ArrayList<PartiallyMatchingResult> getPartiallyMatchingResultLists(){
+		return partiallyMatchingResultLists;
+	}
+	
+	public ArrayList<SameExecutePath> getNotMatchingEvoSuiteLists() {
 		return notMatchingEvoSuiteLists;
 	}
 	
-	public ArrayList<SameExecutePath> getNotMatchingBreakDownLists(){
-		return notMatchingBreakDownLists;
+	public ArrayList<SameExecuteExtractPath> getNotMatchingExtractLists(){
+		return notMatchingExtractLists;
 	}
 }

@@ -2,10 +2,14 @@ package paramaterExtracter;
 
 import java.util.ArrayList;
 
+import executer.SameExecuteExtractPath;
+
 public class ExtractClass {
 
 	private String ownerClass;
 	private ArrayList<Instance> instanceLists = new ArrayList<Instance>();
+	
+	private ArrayList<SameExecuteExtractPath> sameExecuteExtractPathLists = new ArrayList<SameExecuteExtractPath>();
 	
 	public ExtractClass(String oC) {
 		ownerClass = oC;
@@ -15,11 +19,19 @@ public class ExtractClass {
 		instanceLists.add(input);
 	}
 	
+	public void setSameExecuteExtractPathLists(ArrayList<SameExecuteExtractPath> input) {
+		sameExecuteExtractPathLists = input;
+	}
+	
 	public String getOwnerClass() {
 		return ownerClass;
 	}
 	
 	public ArrayList<Instance> getInstanceLists(){
 		return instanceLists;
+	}
+	
+	public ArrayList<SameExecuteExtractPath> getSameExcuteExtractPathLists(){
+		return sameExecuteExtractPathLists;
 	}
 }

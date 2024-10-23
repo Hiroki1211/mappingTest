@@ -2,7 +2,7 @@ package paramaterExtracter;
 
 import java.util.ArrayList;
 
-import breakDownPathExtracter.PutInstanceVariable;
+import executer.ExecutePath;
 import pathExtracter.TraceMethodBlock;
 import tracer.ValueOption;
 
@@ -14,9 +14,19 @@ public class Instance {
 	private ArrayList<PutInstanceVariable> putInstanceVariableLists = new ArrayList<PutInstanceVariable>();
 	private ArrayList<TraceMethodBlock> traceMethodBlockLists = new ArrayList<TraceMethodBlock>();
 	
+	private ArrayList<ExecutePath> executePathLists = new ArrayList<ExecutePath>();
+	
 	public Instance(String s, String oC) {
 		id = s;
 		ownerClass = oC;
+	}
+	
+	public void addExecutePathLists(ExecutePath input) {
+		executePathLists.add(input);
+	}
+	
+	public ArrayList<ExecutePath> getExecutePathLists(){
+		return executePathLists;
 	}
 	
 	public void display() {
